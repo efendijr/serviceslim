@@ -56,12 +56,19 @@ $app->post('/tes', function() use($app, $db){
 	echo $pesan;
 });
 
-// $add = $db->anggota->insert(array(
-// 			"name" => $name,
-// 			"email" => $email,
-// 			"password" => $password_hash,
-// 			"image" => "http://camranger.com/wp-content/uploads/2014/10/Android-Icon.png",
-// 			));
+
+$app->get('/pdo1', function() use($app, $pdo){
+	$query = "select * from author";
+	$hasil = $pdo->query($query);
+	foreach ($hasil as $value) {
+		$tampil["hasil"] = array(
+			"nama" => $value["author_name"],
+			"email" => $value["author_email"]
+			);
+	}
+	echo json_encode($tampil);
+});
+
 
 /*----------------------------------------- table products -----------------------------------------------------------------*/
 $app->get('/products', function() use($app, $db){
@@ -281,10 +288,10 @@ $app->get('/anggota/:key', function($key) use($app, $db){
 });
 
 /* registarasi (post anggota) */
-$app->post('/anggota', function() use($app, $db){
+$app->post('/anggota', function() use($app, $db, $pdo){
 	require_once 'libs/PassHash.php';
 
-	verifyRequiredParams(array('name', 'email', 'password'));
+	verifyRequiredParams(array('name', 'email', 'password', 'image'));
 	// $response = array();
 
 	$name = $app->request->post("name");
@@ -293,6 +300,15 @@ $app->post('/anggota', function() use($app, $db){
 	$password_hash = PassHash::hash($password);
 	validateEmail($email);
 
+	$uploadDir = 'E:/Project/www/slimframe/image/';
+	$fileName = $_FILES['userfile']['name'];
+	$tmpName = $_FILES['userfile']['tmp_name'];
+	$fileSize = $_FILES['userfile']['size'];
+	$fileType = $_FILES['userfile']['type'];
+
+	$filePath = $uploadDir.$fileName;
+	$result = move_uploaded_file($tmpName, $filePath);
+
 	$query = $db->anggota->where("email LIKE ?", $email);
 
 	if ($query->count("*") < 1) {
@@ -300,11 +316,22 @@ $app->post('/anggota', function() use($app, $db){
 			"name" => $name,
 			"email" => $email,
 			"password" => $password_hash,
-			"image" => "http://camranger.com/wp-content/uploads/2014/10/Android-Icon.png",
+			"image" => $filePath,
 			));
-		$tes = $db->tes->insert(array("name" => $name));
 
-		if ($add != null) {
+		// http://camranger.com/wp-content/uploads/2014/10/Android-Icon.png
+		// $query = $db->admin_restoran->select('admin_username')->where("admin_id", $id);
+		// $getId = $db->anggota->select('id')->where("email", $email); 
+		// $getId = $pdo->query("select * from anggota where email = $email");
+
+		// $product = $getId->fetch_assoc();
+		// $tes = $db->tes->insert(array(
+		// 	"name" => $name,
+		// 	"kota" => "lamongan",
+		// 	"anggota_id" => $product["id"],
+		// 	));
+
+		if ($tes != null) {
 			foreach ($query as $value) {
 				$result["status"] = true;
 				$result["result"] = array(
@@ -702,8 +729,8 @@ $app->get('/admin_restoran', function() use($app, $db){
 
 });
 
-$app->get('/getid', function() use($app, $db){
-	$query = $db->admin_restoran->select('admin_username');
+$app->get('/getid/:id', function($id) use($app, $db){
+	$query = $db->admin_restoran->select('admin_username')->where("admin_id", $id);
 	foreach ($query as $value) {
 		$result["status"] = true;
 		$result["result"][] = array("admin_username" => $value["admin_username"]);
@@ -1097,6 +1124,33 @@ $app->post('/verifyPayment', function() use($app, $db) {
 	}
 
 });
+
+/**
+ * method to store the saled items in sales table
+ */
+// function insertItemSales($paymentId, $transaction, $state) {
+
+//     $item_list = $transaction->getItemList();
+
+//     // $db = new DbHandler();
+//     $server = 'localhost';
+// 	$db_name = 'paypal';
+// 	$db_user = 'root';
+// 	$db_pass = '';
+//     $pdo = new PDO("mysql:host=$server;dbname=$db_name", $db_user, $db_pass);
+
+//     foreach ($item_list->items as $item) {
+//         $sku = $item->sku;
+//         $price = $item->price;
+//         $quanity = $item->quantity;
+
+//         $product = $db->getProductBySku($sku);
+
+//         // inserting row into sales table
+//         $db->storeSale($paymentId, $product["id"], $state, $price, $quanity);
+//     }
+// }
+
 
 /*-------------------------------------------------- utils --------------------------------------------------------------------------*/
 
