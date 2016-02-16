@@ -7,7 +7,7 @@ require 'libs/NotORM/NotORM.php';
 $server = 'localhost';
 $db_name = 'paypal';
 $db_user = 'root';
-$db_pass = '';
+$db_pass = '292409';
 
 use PayPal\Api\Payment;
 
@@ -23,6 +23,10 @@ $db = new NotORM($pdo);
 
 
 $app = new \Slim\Slim();
+
+$app->get('/', function(){
+	echo "string";
+});
 
 $app->get('/hello/:name', function($name){
 	echo "hello ". $name;
