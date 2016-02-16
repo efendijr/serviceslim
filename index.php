@@ -24,7 +24,7 @@ $db = new NotORM($pdo);
 
 $app = new \Slim\Slim();
 
-$app->get('/hello/:name', function($name){
+$app->get('/hai/:name', function($name){
 	echo "hello ". $name;
 });
 
